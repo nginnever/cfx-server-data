@@ -359,6 +359,7 @@ Citizen.CreateThread(function()
                     diedAt = GetGameTimer()
                 end
             else
+                --TriggerEvent('chat:addMessage', { args = { 'entity is not dead'}})
                 diedAt = nil
             end
         end

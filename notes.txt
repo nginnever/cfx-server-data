@@ -69,3 +69,30 @@ restart [resource]
 ["RIGHT"] = 0xDEB34313
 
 ["DEL"] = 0x3F4DC0EF
+
+
+OddWest Concept Ideas:
+
+three classes: 
+	- Basic Human
+	  - Everyone starts as this class with 0 xp points. They will be able to get xp, and are excluded from being able to use weapons (or at least higher level weapons). They could be maybe in the future shop keeps or something normal. 
+	- The Hunters
+	  - Hunters will be allowed to use the most powerful weapons in the mod. They will be able to "clense" oddities and return them to normal human form. It will require a certain level of xp to become a hunter. Only other hunters can bring you into this class. The goal of the hunter is to protect civilization from the oddities. You gain xp from clensing or destroying oddities.
+	- The Oddities
+	  - Oddities are a special class that can cast magical effects in the game. They can shapeshift, teleport, move objects with their mind, create fire spell explosions and... They will require a good deal of xp to become. You will have to maybe find some object or complete some quest line in the mod to become an oddity. Your goal as an oddity is to hide yourself, don't get found by hunters, and fight hunters while attacking civilization and completing certain quests like maybe killing a number of humans.
+
+Resources:
+ -Experience (required by all to gain certain classes or...)
+ -Some Magical Force (required by oddities)
+ -Base currency like gold (just for weapons or item purchase)
+
+Concepts:
+
+Oddity testing: If an oddity uses a special skill within a certain time frame hunters can ask to test anoyone to see if they are an oddity by checking for a signal of magic radiating from them.
+
+Cleansing: If you are caught as on oddity you cleansed of you powers. You would then become just a human and need to redo your quest line to get your powers back.
+
+Quest lines: There are taro cards in the game. Maybe we scatter those like dragon balls and if you collect enough you complete maybe just one part of the quest line. Maybe you have to gather a certain ammount blood from killing humans. Maybe each power has its own quest line. So for the fire lord line you would have to do fire related, like setting certain buildings buildings on fire. For the shape shifters you could be required to find a particular animal and maybe get bit by it. Prehaps you need to steal a resource like an idol that humans protect in the major cities as well.
+
+
+

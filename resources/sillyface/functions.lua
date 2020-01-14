@@ -2,6 +2,16 @@ function print(data)
 	TriggerEvent('chat:addMessage', { args = { data }})
 end
 
+function hideFOW(bool)
+	SetMinimapHideFow(bool)
+end
+
+function godmode(bool)
+	TriggerEvent('chat:addMessage', { args = { 'Toggle godmode ' .. tostring(bool) .. ''}})
+	local lped = PlayerPedId()
+	SetEntityInvincible(lped, bool)
+end
+
 function GiveWeapon(weapon)
 	local lped = PlayerPedId()
 	--Citizen.InvokeNative(0xADF692B254977C0C, lped, weapon, true, 120, true, true)
@@ -47,7 +57,7 @@ function SpawnAnimal(a)
     local playerPed = PlayerPedId() -- get the local player ped
     local pos = GetEntityCoords(playerPed) -- get the position of the local player ped
 
-    local object = CreatePed(animal, pos.x, pos.y, pos.z, 0.0, true, true, true, true)
+    local object = CreatePed(animal, pos.x+2, pos.y, pos.z, 0.0, true, true, true, true)
     -- Set ped to visible
     Citizen.InvokeNative(0x283978A15512B2FE, object, true)
 end
@@ -68,6 +78,26 @@ function SpawnVehicle(v)
     local spawn_vehicle = CreateVehicle(vehicle, pos.x, pos.y, pos.z, 0.0, true, true, true, true)
     --Citizen.InvokeNative(0x283978A15512B2FE, spawn_vehicle, true)
 end
+
+function DropObject(o)
+    local playerPed = PlayerPedId() -- get the local player ped
+    local pos = GetEntityCoords(playerPed) -- get the position of the local player ped
+	local objHash = GetHashKey(o)
+	Citizen.InvokeNative(0xFA28FE3A6246FC30, objHash)
+	while not Citizen.InvokeNative(0x1283B8B89DD5D1B6, objHash) do
+		Citizen.InvokeNative(0xFA28FE3A6246FC30, objHash)
+		Citizen.Wait(0)
+	end
+	TriggerEvent('chat:addMessage', { args = { 'object after before loaded ' .. objHash .. ''}})
+	local obj = CreateObject(objHash, pos.x, pos.y+1, pos.z, true, true, true)
+	PlaceObjectOnGroundProperly(obj)
+
+	--local network = NetworkGetNetworkIdFromEntity(object)
+	--return network
+end
+
+-- helper functions
+
 
 function Dismount()
 	Citizen.InvokeNative(0x48E92D3DDE23C23A, PlayerPedId(), true)
@@ -98,7 +128,6 @@ end
 
 function NCGetCamRotation()
 	local gameplayrot = GetGameplayCamRot(0)
-    --return Function.Call<Vector3>(Hash.GET_GAMEPLAY_CAM_ROT, 0)
     return gameplayrot
 end
 
@@ -111,7 +140,6 @@ function FireBall()
     local MaxEXP = 100
 
     SetEntityInvincible(playerPed, true)
-
     local Shockspace = vector3(RotToDir(NCGetCamRotation()).x * 3, RotToDir(NCGetCamRotation()).y * 3, RotToDir(NCGetCamRotation()).z * 3);
  --    if EXPNumber < MaxEXP or EXPNumber == MaxEXP then
  --    	AddExplosion(pos.x + (EXPNumber*Shockspace.x), pos.y + (EXPNumber*Shockspace.y), pos.z + (EXPNumber*Shockspace.z), 2, 2.0, true, false, 0)
@@ -121,28 +149,12 @@ function FireBall()
  --    	AddExplosion(pos.x + (MaxEXP*Shockspace.x), pos.y + (MaxEXP*Shockspace.y), pos.z + (MaxEXP*Shockspace.z), 2, 2.0, true, false, 0)
 	-- 	Citizen.Wait(100)
 	-- end
-	AddExplosion(pos.x + Shockspace.x, pos.y + Shockspace.y, pos.z + Shockspace.z, 2, 2.0, true, false, 0)
+	AddExplosion(pos.x, pos.y, pos.z, 3, 2.0, true, false, 0)
+	--AddExplosion(pos.x + Shockspace.x, pos.y + Shockspace.y, pos.z + Shockspace.z, 2, 2.0, true, false, 0)
 	Citizen.Wait(100)
 	SetEntityInvincible(playerPed, false)
 	-- local rot = vector3(1.0, 2.0, 3.0)
 	-- RotToDir(rot)
-end
-
-
--- If GUI setting turned on, listen for INPUT_PICKUP keypress
-local enableInventoryGui = true
-
-if enableInventoryGui then
-  Citizen.CreateThread(function()
-    local i_key = keys["I"]
-    while true do
-      Citizen.Wait(0)
-      if IsControlJustReleased(0, i_key)  then -- IF INPUT_PICKUP Is pressed
-        TriggerEvent('chatMessage', "", {255, 0, 0}, "tab key pressed");
-        OpenGui()
-      end
-    end
-  end)
 end
 
 -- inventory functions
@@ -154,15 +166,103 @@ function OpenGui()
 end
 
 -- Close Gui and disable NUI
-function CloseGui()
+function CloseInv()
   SetNuiFocus(false)
   SendNUIMessage({openInv = false})
   TriggerEvent('chat:addMessage', { args = { 'closing inventory'}})
 end
+function CloseChar()
+  SetNuiFocus(false)
+  SendNUIMessage({openChar = false})
+  TriggerEvent('chat:addMessage', { args = { 'closing character'}})
+end
+
+-- character creation stuff
+local firstSpawn = false
+function BootCreator()
+	SetNuiFocus(true, true)
+	print("opening character ui")
+	SendNUIMessage({openChar = true})
+end
+function BootCharSelect(chars)
+	SetNuiFocus(true, true)
+	print("opening character ui")
+	SendNUIMessage({type = 1, list = chars})
+end
+
 
 -- NUI Callback Methods
-RegisterNUICallback('close', function(data, cb)
-  CloseGui()
+RegisterNUICallback('closeInv', function(data, cb)
+  CloseInv()
   TriggerEvent('chat:addMessage', { args = { 'closing inventory callback'}})
   cb('ok')
+end)
+RegisterNUICallback('closeChar', function(data, cb)
+  CloseChar()
+  TriggerEvent('chat:addMessage', { args = { 'closing character screen callback'}})
+  cb('ok')
+end)
+
+
+RegisterNUICallback('giveWeapon', function(data, cb)
+  GiveWeapon(data.weapon)
+  cb('ok')
+end)
+
+RegisterNUICallback('dropItem', function(data, cb)
+	-- this crashes client if not in thread
+	Citizen.CreateThread(function()
+		DropObject(data.item)
+	end)
+	cb('ok')
+end)
+
+-- create characte NUIs
+RegisterNUICallback('createCharacter2', function(id, cb)
+local ped = PlayerPedId()
+FreezeEntityPosition(ped, false)
+local charId = tonumber(id)
+        --Citizen.Wait(0)
+        --local spawned = Citizen.InvokeNative(0xB8DFD30D6973E135 --[[NetworkIsPlayerActive]], PlayerPedId(), Citizen.ResultAsInteger())
+        --if spawned then
+            --printClient("Player spawned!")
+            TriggerEvent('chat:addMessage', { args = { 'player spawned!!!'}})
+            TriggerServerEvent("xrp:firstSpawn", charId)
+            firstSpawn = true
+        --end
+end)
+
+RegisterNUICallback('newCharacter', function(data, cb)
+	SetNuiFocus(false, false)
+	local ped = PlayerPedId()
+	local model = GetEntityModel(ped)
+	local function tchelper(first, rest)
+		return first:upper()..rest:lower()
+	end
+	local fname = data.name:gsub("(%a)([%w_']*)", tchelper)
+	local lname = data.lname:gsub("(%a)([%w_']*)", tchelper)
+	TriggerEvent('chat:addMessage', { args = { 'first name: '..fname..' last name: '..lname}})
+	TriggerServerEvent("createCharacter", fname, lname, model)
+	--new = 1
+	TriggerEvent("SpawnCharacter")
+	--TriggerEvent("redemrp_identity:SpawnCharacter")
+	--new = 0
+
+	-- doesnt exist
+	--TriggerEvent("redemrp_skin:openCreator")
+    cb('ok')
+end)
+
+RegisterNUICallback('selectCharacter', function(id, cb)
+	SetNuiFocus(false, false)
+	local ped = PlayerPedId()
+	FreezeEntityPosition(ped, false)
+	local charId = tonumber(id)
+
+	exports.spawnmanager:setAutoSpawn(true)
+	exports.spawnmanager:forceRespawn()
+	
+	print("Player spawned!")
+	--TriggerServerEvent("redemrp:selectCharacter", charId)
+	--TriggerEvent("redemrp_identity:SpawnCharacter")
 end)
