@@ -160,21 +160,27 @@ end
 -- inventory functions
 -- Open Gui and Focus NUI
 function OpenGui()
-  SetNuiFocus(true, true)
-  SendNUIMessage({openInv = true})
-  TriggerEvent('chat:addMessage', { args = { 'opening inventory'}})
+  	SetNuiFocus(true, true)
+  	SendNUIMessage({openInv = true, invItems = false})
+  	TriggerEvent('chat:addMessage', { args = { 'opening inventory'}})
 end
 
 -- Close Gui and disable NUI
 function CloseInv()
-  SetNuiFocus(false)
-  SendNUIMessage({openInv = false})
-  TriggerEvent('chat:addMessage', { args = { 'closing inventory'}})
+  	SetNuiFocus(false)
+  	SendNUIMessage({openInv = false, invItems = false})
+  	TriggerEvent('chat:addMessage', { args = { 'closing inventory'}})
 end
+
 function CloseChar()
-  SetNuiFocus(false)
-  SendNUIMessage({openChar = false})
-  TriggerEvent('chat:addMessage', { args = { 'closing character'}})
+  	SetNuiFocus(false)
+  	SendNUIMessage({openChar = false, invItems = false})
+  	TriggerEvent('chat:addMessage', { args = { 'closing character'}})
+end
+
+-- initialize inventory
+function initInventory(inv)
+	SendNUIMessage({invItems = inv})
 end
 
 -- character creation stuff
@@ -182,12 +188,12 @@ local firstSpawn = false
 function BootCreator()
 	SetNuiFocus(true, true)
 	print("opening character ui")
-	SendNUIMessage({openChar = true})
+	SendNUIMessage({openChar = true, invItems = false})
 end
 function BootCharSelect(chars)
 	SetNuiFocus(true, true)
 	print("opening character ui")
-	SendNUIMessage({type = 1, list = chars})
+	SendNUIMessage({type = 1, list = chars, invItems = false})
 end
 
 
@@ -197,6 +203,7 @@ RegisterNUICallback('closeInv', function(data, cb)
   TriggerEvent('chat:addMessage', { args = { 'closing inventory callback'}})
   cb('ok')
 end)
+
 RegisterNUICallback('closeChar', function(data, cb)
   CloseChar()
   TriggerEvent('chat:addMessage', { args = { 'closing character screen callback'}})
@@ -254,6 +261,7 @@ RegisterNUICallback('newCharacter', function(data, cb)
 end)
 
 RegisterNUICallback('selectCharacter', function(id, cb)
+	-- this needs to get the inventory from db and pass it throughNUI
 	SetNuiFocus(false, false)
 	local ped = PlayerPedId()
 	FreezeEntityPosition(ped, false)
@@ -261,7 +269,14 @@ RegisterNUICallback('selectCharacter', function(id, cb)
 
 	exports.spawnmanager:setAutoSpawn(true)
 	exports.spawnmanager:forceRespawn()
-	
+
+	-- get inventory from db
+	-- give inventory items to ui
+	local item = {item = "054.png"}
+	local itemList = {}
+	itemList[1] = item
+	-- charList[1] = char
+	initInventory(itemList)
 	print("Player spawned!")
 	--TriggerServerEvent("redemrp:selectCharacter", charId)
 	--TriggerEvent("redemrp_identity:SpawnCharacter")

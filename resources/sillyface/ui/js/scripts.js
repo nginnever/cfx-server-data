@@ -24,6 +24,17 @@ $(document).ready(function(){
 	function closeCreator() {
 		$(".creator").css("visibility", "hidden")
 	}
+	function insertImgs(items) {
+		//attach for each slot, each items.img
+		$("#s0").attr("src", items[0].slot0+".png").css("display", "block")
+		$("#s1").attr("src", items[0].slot1+".png").css("display", "block")
+		$("#s2").attr("src", items[0].slot2+".png").css("display", "block")
+
+		// for(i=0; i<items[0].length; i++){
+		// 	console.log(items[0].slot1)
+		// 	$("#s"+i).attr("src", items[0].slot+i+".png").css("display", "block")
+		// }
+	}
 
 	// Listen for NUI Events
 	window.addEventListener('message', function(event){
@@ -50,6 +61,13 @@ $(document).ready(function(){
     if(item.type == 1){
       loadCharacters(item.list)
       //console.log(event.data.list)
+		}
+
+		// hacky ass test
+		if(item.invItems[0].slot0 !== undefined){
+			console.log(item.invItems[0].slot1)
+			// loop through the items, attach them to UI
+			insertImgs(item.invItems)
 		}
 	})
 
@@ -105,15 +123,29 @@ $(document).ready(function(){
 	  	}
 		})
 
+	  // drop item slot
 	  $("#slot3").droppable({ accept: ".draggable",
 	  	drop: function(event, ui) {
 	  		console.log("dropping into slot3 now! meow")
+	  		let itemName = ui.draggable.attr('src')
+	  		console.log(itemName.substring(0, itemName.length - 4))
 	  		var dropped = ui.draggable
 	  		var droppedOn = $(this)
 	  		$(dropped).detach().css({top: 0,left: 0}).appendTo(droppedOn)
+	  	// 	// put data on jquery.. using this for item stacking / type of item?
+	  	// 	var slot = $("#slot3")[0];
+	  	// 	jQuery.data(slot, "test", {
+  		// 		first: 16,
+  		// 		last: "pizza!"
+				// });
+				// //replacing image
+				// $( "span" ).first().text( jQuery.data( slot, "test" ).last );
+
+				//item: "P_BOXLRGMEAT01X"
 	  		// drop item
+	  		$('div#slot3 > img').remove()
 	      $.post('http://sillyface/dropItem', JSON.stringify({
-          item: "P_BOXLRGMEAT01X",
+          item: itemName.substring(0, itemName.length - 4),
           toPlayer: null
 	      }))
 	  	}

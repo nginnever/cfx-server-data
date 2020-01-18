@@ -70,6 +70,30 @@ restart [resource]
 
 ["DEL"] = 0x3F4DC0EF
 
+TODO:
+
+-Clean up the spawning. Currently shows the model hovering in the air
+-hookup spawn to create character
+-custom health bar
+-Add spawn points GUI
+-Clean up char select GUI
+-Learn blips
+	- explore points of interest
+-Complete inventory dropping and picking up
+	- (dropping almost done)
+	- diplay text above dropped items
+	- add picked up item to inventory (extend the delete code)
+-Add UI for oddities (spellbook)
+-Create new fire spell for projected fire ball
+-open and enter doors
+-clean up code (json.encode(result))
+-build enter exit
+-iterate /commands for players
+	- emotes
+	- enter and exit buildings
+-fill map holes
+
+
 
 OddWest Concept Ideas:
 
@@ -93,6 +117,7 @@ Oddity testing: If an oddity uses a special skill within a certain time frame hu
 Cleansing: If you are caught as on oddity you cleansed of you powers. You would then become just a human and need to redo your quest line to get your powers back.
 
 Quest lines: There are taro cards in the game. Maybe we scatter those like dragon balls and if you collect enough you complete maybe just one part of the quest line. Maybe you have to gather a certain ammount blood from killing humans. Maybe each power has its own quest line. So for the fire lord line you would have to do fire related, like setting certain buildings buildings on fire. For the shape shifters you could be required to find a particular animal and maybe get bit by it. Prehaps you need to steal a resource like an idol that humans protect in the major cities as well.
+
 
 
 

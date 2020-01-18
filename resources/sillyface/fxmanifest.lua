@@ -9,6 +9,7 @@ ui_page 'ui/html/ui.html'
 files {
 	'ui/html/ui.html',
 	'ui/html/054.png',
+	'ui/html/WEAPON_PISTOL_M1899.png',
 	'ui/css/inventorystyle.css',
 	'ui/js/scripts.js',
 	--character ui files

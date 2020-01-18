@@ -46,6 +46,24 @@ AddEventHandler("serverGetCharacters", function(firstname, lastname, model)
 	-- end)
 end)
 
+RegisterServerEvent("serverGetInventory")
+AddEventHandler("serverGetInventory", function(firstname, lastname, model)
+	local _source = source
+	local playerInfo = table.concat(GetPlayerIdentifiers(source), " ")
+	local ptable = GetPlayerIdentifiers(source)
+	local SteamID = ptable[1]
+	SteamID = "'"..SteamID.."'"
+	local id = 5
+	-- hardcoded id to 5 for now
+	MySQL.Async.fetchAll("SELECT * FROM inventory WHERE id="..id.." ",
+		{},
+		function(res)
+			TriggerClientEvent("clientGetInventory", _source, res)
+		end
+	)
+end)
+
+
 RegisterServerEvent("createCharacter")
 AddEventHandler("createCharacter", function(firstname, lastname, model)
 	TriggerEvent('chat:addMessage', { args = { 'testing server callback'}})
