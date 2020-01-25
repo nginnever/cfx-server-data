@@ -153,29 +153,61 @@ end
 -- 	DisplayHelpTextFromStringLabel(0, false, false, -1)
 -- end
 
-function DeleteBag(Bag)
-  SetEntityAsMissionEntity(Bag, true, true)
-  DeleteObject(Bag)
+-- void PedPickupNearestWeapon(Ped ped)    {
+--     Prop NearestWeapon = Function.Call<Prop>(Hash.GET_CLOSEST_OBJECT_OF_TYPE, ped.Position.X, ped.Position.Y, ped.Position.Z, 7f, Function.Call<int>(Hash.GET_HASH_KEY, "w_pi_pistol"), 0, 0, 0);
+--     if (NearestWeapon != null && NearestWeapon.Exists() && ped.Weapons.Current.Hash.Equals(WeaponHash.Unarmed))        {
+--         ped.Task.ClearAllImmediately();
+--         ped.Weapons.RemoveAll();
+--         TaskSequence PedPickupWeapon = new TaskSequence();
+--         PedPickupWeapon.AddTask.RunTo(NearestWeapon.Position);
+--         PedPickupWeapon.AddTask.PlayAnimation("pickup_object", "pickup_low", 8f, -1, false, 0f);
+--         PedPickupWeapon.Close();
+--         ped.Task.PerformSequence(PedPickupWeapon);
+--         Script.Wait(750); 
+--         NearestWeapon.Delete();
+--         NearestWeapon = null;
+--        ped.Weapons.Give(WeaponHash.Pistol, 9999, true, true);
+--    }
+-- }
+
+function DeleteThing(o)
+	TriggerEvent("chatMessage", "[Natomata]", {255,0,0}, "running pickup item")
+  	SetEntityAsMissionEntity(o, true, true)
+  	--DeleteEntity(o) -- also works
+  	DeleteObject(o)
+  	-- local playerPed = PlayerPedId()
+  	-- local taskID = TaskPickUpWeapon(o)
+  	-- TaskPerformSequence(playerPed, taskID)
+  	--TaskPickUpWeapon(o)
 end
 
 local text_take = 'Pick up items [ENTER]'
 
 local dropList = {}
-dropList["P_BOXLRGMEAT01X"] = true
+dropList[GetHashKey("P_BOXLRGMEAT01X")] = true
+--dropList[GetWeapontypeModel(GetHashKey("WEAPON_PISTOL_M1899"))] = true
 Citizen.CreateThread(function()
 	while true do
 	Citizen.Wait(0)
 		local playerPed = PlayerPedId() -- get the local player ped
 		local pos = GetEntityCoords(playerPed) -- get the position of the local player ped
+		--local w = GetWeapontypeModel(GetHashKey("WEAPON_PISTOL_M1899"))
 		for k,v in pairs(dropList) do
-			if DoesObjectOfTypeExistAtCoords(pos.x, pos.y, pos.z, 1.3, GetHashKey(k), true) then
-				local Bag = GetClosestObjectOfType(pos.x, pos.y, pos.z, 1.3, GetHashKey(k), false, false, false)
+			if DoesObjectOfTypeExistAtCoords(pos.x, pos.y, pos.z, 1.3, k, true) then
+				--GetWeapontypeModel
+				--TriggerEvent("chatMessage", "[Natomata]", {255,0,0}, "Item " ..k.. " ")
+				local Obj = GetClosestObjectOfType(pos.x, pos.y, pos.z, 1.3, k, false, false, false)
+				-- if HasModelLoaded(Obj) then
+				-- 	TriggerEvent("chatMessage", "[Natomata]", {255,0,0}, "gun loaded " ..k.. " ")
+				-- end
 				--TriggerEvent("chatMessage", "[Natomata]", {255,0,0}, "Item " ..Bag.. " ")
 				--if NetworkGetNetworkIdFromEntity(Bag) == k then
 					--scenrionahoi(text_take)
 					if IsControlJustReleased(0, keys["ENTER"]) then
 						-- TriggerServerEvent('DropSystem:take', k)
-						DeleteBag(Bag)
+						TriggerEvent("chatMessage", "[Natomata]", {255,0,0}, "Item id? " ..Obj.. " , "..Obj.x)
+						TriggerServerEvent("getDroppedItem", Obj)
+						DeleteThing(Obj)
 					end
 				--end
 			end
@@ -224,6 +256,14 @@ RegisterNetEvent("clientGetCharacter")
 AddEventHandler("clientGetCharacter", function(charList)
 	TriggerEvent("chatMessage", "[Natomata]", {255,0,0}, "Server returned char list from db")
 	BootCharSelect(charList)
+end)
+
+RegisterNetEvent("clientGiveDroppedItem")
+AddEventHandler("clientGiveDroppedItem", function(item, id)
+	TriggerEvent("chatMessage", "[Natomata]", {255,0,0}, "Server returned dropped item from db "..item)
+	--todo add type of item
+	giveDroppedItem(item, id)
+	--delete from dropped_items db
 end)
 
 RegisterNetEvent("clientGetInventory")

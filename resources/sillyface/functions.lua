@@ -79,7 +79,7 @@ function SpawnVehicle(v)
     --Citizen.InvokeNative(0x283978A15512B2FE, spawn_vehicle, true)
 end
 
-function DropObject(o)
+function DropObject(o, name)
     local playerPed = PlayerPedId() -- get the local player ped
     local pos = GetEntityCoords(playerPed) -- get the position of the local player ped
 	local objHash = GetHashKey(o)
@@ -91,6 +91,8 @@ function DropObject(o)
 	TriggerEvent('chat:addMessage', { args = { 'object after before loaded ' .. objHash .. ''}})
 	local obj = CreateObject(objHash, pos.x, pos.y+1, pos.z, true, true, true)
 	PlaceObjectOnGroundProperly(obj)
+	-- hit db
+	TriggerServerEvent("droppedItem", obj, name)
 
 	--local network = NetworkGetNetworkIdFromEntity(object)
 	--return network
@@ -195,6 +197,17 @@ function BootCharSelect(chars)
 	print("opening character ui")
 	SendNUIMessage({type = 1, list = chars, invItems = false})
 end
+-- Dropped item
+function giveDroppedItem(item, id)
+	--todo create log of free inventory slots
+  	SetNuiFocus(true, true)
+  	SendNUIMessage({openInv = true, giveItem = item})
+  	--delete from dropped item db
+  	TriggerServerEvent('removeDroppedItem', id)
+	--call back to save item in database
+
+	--GiveWeapon(item)
+end
 
 
 -- NUI Callback Methods
@@ -216,12 +229,49 @@ RegisterNUICallback('giveWeapon', function(data, cb)
   cb('ok')
 end)
 
+RegisterNUICallback('updatePickupSlot', function(data, cb)
+	TriggerEvent('chat:addMessage', { args = { 'picked up item, updating db slot: '.. data.slot}})
+	TriggerServerEvent("updateSlot", data.slot, data.item)
+end)
+
 RegisterNUICallback('dropItem', function(data, cb)
+	TriggerEvent('chat:addMessage', { args = { 'item from UI '.. data.item}})
+	-- SetEntityAsMissionEntity 
 	-- this crashes client if not in thread
 	Citizen.CreateThread(function()
-		DropObject(data.item)
+		DropObject(data.item, data.item)
 	end)
+	TriggerServerEvent('removeFromSlot', data.slot)
 	cb('ok')
+end)
+
+
+RegisterNUICallback('dropWeapon', function(data, cb)
+	-- if item is a weapon RemoveWeaponFromPed
+	local playerPed = PlayerPedId()
+	TriggerEvent('chat:addMessage', { args = { 'weapon from UI '.. data.slot}})
+	-- SetEntityAsMissionEntity 
+	--SetPedDropsInventoryWeapon(playerPed, data.item, 0, 2.0, 0, -1)
+	RemoveWeaponFromPed(playerPed, GetHashKey(data.item))
+	Citizen.CreateThread(function()
+		DropObject("P_BOXLRGMEAT01X", data.item)
+		-- SetTextFont(0)
+		-- SetTextProportional(1)
+		-- SetTextScale(0.0, 0.45)
+		-- SetTextDropshadow(1, 0, 0, 0, 255)
+		-- SetTextEdge(1, 0, 0, 0, 255)
+
+		-- SetTextDropShadow()
+		-- SetTextOutline()
+		-- SetTextEntry("STRING")
+		-- AddTextComponentString(text)
+		-- DrawText(0.174, 0.855)
+	end)
+	TriggerServerEvent('removeFromSlot', data.slot)
+	-- Citizen.CreateThread(function()
+	-- 	DropObject(data.item)
+	-- end)
+	-- cb('ok')
 end)
 
 -- create characte NUIs

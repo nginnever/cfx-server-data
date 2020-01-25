@@ -92,3 +92,84 @@ AddEventHandler("createCharacter", function(firstname, lastname, model)
 	-- 	addCharacter(_source, user, firstname, lastname)
 	-- end)
 end)
+
+RegisterServerEvent("droppedItem")
+AddEventHandler("droppedItem", function(obj, name)
+	TriggerEvent('chat:addMessage', { args = { 'inserting into db dropped item'}})
+	local _source = source
+
+	MySQL.Async.fetchAll("INSERT INTO dropped_items (id, name) VALUES(@id, @name)",
+		{["@id"] = obj, ["@name"] = name},
+		function(res)
+			TriggerClientEvent("serverprint", _source, "Data added to database!")
+		end
+	)
+end)
+
+RegisterServerEvent("removeDroppedItem")
+AddEventHandler("removeDroppedItem", function(id)
+	TriggerEvent('chat:addMessage', { args = { 'removing dropped item from db'}})
+	local _source = source
+
+	-- hardcoded id for now
+	MySQL.Async.fetchAll("DELETE FROM dropped_items WHERE id="..id,
+		{},
+		function(res)
+			TriggerClientEvent("serverprint", _source, "dropped_items data remove to database!")
+		end
+	)
+end)
+
+RegisterServerEvent("getDroppedItem")
+AddEventHandler("getDroppedItem", function(id)
+	local _source = source
+	TriggerClientEvent("serverprint", _source, id)
+	MySQL.Async.fetchAll("SELECT * FROM dropped_items WHERE id="..id,
+		{},
+		function(res)
+			TriggerClientEvent("serverprint", _source, dump(res))
+			TriggerClientEvent("clientGiveDroppedItem", _source, res[1].name, id)
+		end
+	)
+end)
+
+RegisterServerEvent("removeFromSlot")
+AddEventHandler("removeFromSlot", function(slot)
+	TriggerEvent('chat:addMessage', { args = { 'removing dropped item from db'}})
+	local _source = source
+
+	-- hardcoded id for now
+	MySQL.Async.fetchAll("UPDATE inventory SET "..slot.."=@"..slot.." WHERE id=@id",
+		{["@id"] = 5, ["@..slot.."] = ""},
+		function(res)
+			TriggerClientEvent("serverprint", _source, "slot data remove to database!")
+		end
+	)
+end)
+
+RegisterServerEvent("updateSlot")
+AddEventHandler("updateSlot", function(slot, item)
+	TriggerEvent('chat:addMessage', { args = { 'inserting into player db pickup item'}})
+	local _source = source
+
+	-- hardcoded id for now
+	MySQL.Async.fetchAll("UPDATE inventory SET "..slot.."=@"..slot.." WHERE id=@id",
+		{["@id"] = 5, ["@"..slot] = item},
+		function(res)
+			TriggerClientEvent("serverprint", _source, "slot data added to database!")
+		end
+	)
+end)
+
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
